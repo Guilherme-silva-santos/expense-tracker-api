@@ -47,13 +47,13 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  accounts              Account[]
-  categories            Category[]
-  transactions          Transaction[]
-  budgets               Budget[]
-  goals                 Goal[]
-  recurringTransactions RecurringTransaction[]
-  refreshTokens         RefreshToken[]
+  accounts     Account[]
+  categories   Category[]
+  transactions Transaction[]
+  budgets      Budget[]
+  goals        Goal[]
+
+  refreshTokens RefreshToken[]
 
   @@map("users")
 }
@@ -81,9 +81,8 @@ model Account {
   createdAt      DateTime    @default(now()) @map("created_at")
   updatedAt      DateTime    @updatedAt @map("updated_at")
 
-  user                  User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  transactions          Transaction[]
-  recurringTransactions RecurringTransaction[]
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
 
   @@index([userId])
   @@map("accounts")
@@ -97,10 +96,9 @@ model Category {
   createdAt DateTime     @default(now()) @map("created_at")
   updatedAt DateTime     @updatedAt @map("updated_at")
 
-  user                  User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  transactions          Transaction[]
-  budgets               Budget[]
-  recurringTransactions RecurringTransaction[]
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  budgets      Budget[]
 
   @@unique([userId, name, type])
   @@index([userId])
@@ -165,31 +163,4 @@ model Goal {
 
   @@index([userId])
   @@map("goals")
-}
-
-model RecurringTransaction {
-  id             String             @id @default(uuid()) @db.Uuid
-  userId         String             @map("user_id") @db.Uuid
-  accountId      String             @map("account_id") @db.Uuid
-  categoryId     String?            @map("category_id") @db.Uuid
-  type           TransactionType
-  amount         Decimal            @db.Decimal(14, 2)
-  description    String?
-  frequency      RecurringFrequency
-  startDate      DateTime           @map("start_date")
-  endDate        DateTime?          @map("end_date")
-  nextOccurrence DateTime           @map("next_occurrence")
-  isActive       Boolean            @default(true) @map("is_active")
-  createdAt      DateTime           @default(now()) @map("created_at")
-  updatedAt      DateTime           @updatedAt @map("updated_at")
-
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  account  Account   @relation(fields: [accountId], references: [id], onDelete: Restrict)
-  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-
-  @@index([userId])
-  @@index([accountId])
-  @@index([categoryId])
-  @@index([nextOccurrence])
-  @@map("recurring_transactions")
 }
