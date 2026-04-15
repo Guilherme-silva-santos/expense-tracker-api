@@ -6,23 +6,17 @@ import { SignInDto } from '../dto/signIn-dto'
 
 export const signIn = new Elysia().post(
   '/sign-in',
-  async ({ body, set, jwt }) => {
+  async ({ body, jwt }) => {
     const { email, password } = body
 
-    try {
-      const authRepository = new AuthRepository()
-      const tokenService = new ElysiaJwtTokenService(jwt)
+    const authRepository = new AuthRepository()
+    const tokenService = new ElysiaJwtTokenService(jwt)
 
-      const signInUseCase = new SignInUseCase(authRepository, tokenService)
+    const signInUseCase = new SignInUseCase(authRepository, tokenService)
 
-      const result = await signInUseCase.signIn(email, password)
+    const result = await signInUseCase.signIn(email, password)
 
-      return result
-    } catch (error) {
-      console.error(error)
-      set.status = 500
-      return { message: 'Internal server error' }
-    }
+    return result
   },
   {
     body: SignInDto,

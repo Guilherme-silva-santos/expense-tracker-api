@@ -5,34 +5,25 @@ import { AuthRepository } from '../repositories/auth-repository'
 import { UserWithTheSameEmailError } from '../use-case/errors/user-with-the-same-email-error'
 import { RegisterUserDto } from '../dto/register-user-dto'
 
-export const register = new Elysia().post(
-  '/register',
-  async ({ body, set }) => {
-    const { name, email, password } = body
-
-    try {
-      const registerRepository = new AuthRepository()
-      const userRepository = new UserRepository()
+export const register = new Elysia()
+  .decorate('userRepository', new UserRepository())
+  .decorate('authRepository', new AuthRepository())
+  .post(
+    '/register',
+    async ({ body, set, userRepository, authRepository }) => {
+      const { name, email, password } = body
 
       const registerUserUseCase = new RegisterUserUseCase(
         userRepository,
-        registerRepository
+        authRepository
       )
 
       await registerUserUseCase.register({ name, email, password })
 
       set.status = 201
       return { message: 'User created successfully' }
-    } catch (error) {
-      if (error instanceof UserWithTheSameEmailError) {
-        set.status = 409
-        return { message: error.message }
-      }
-
-      throw error
+    },
+    {
+      body: RegisterUserDto,
     }
-  },
-  {
-    body: RegisterUserDto,
-  }
-)
+  )

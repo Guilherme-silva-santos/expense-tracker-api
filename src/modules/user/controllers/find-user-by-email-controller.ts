@@ -1,14 +1,15 @@
-import Elysia from 'elysia'
+import Elysia, { t } from 'elysia'
 import { UserRepository } from '../repositories/user-repository'
 import { UserNotFoundError } from '../../../shared/errors/user-not-found-error'
+import { getUserDto } from '../dto/get-user-dto'
 
-export const findUserByemail = new Elysia().get(
-  '/email/:email',
-  async ({ params, set }) => {
-    const { email } = params
+export const findUserByemail = new Elysia()
+  .decorate('userRepository', new UserRepository())
+  .get(
+    '/email/:email',
+    async ({ params, set, userRepository }) => {
+      const { email } = params
 
-    try {
-      const userRepository = new UserRepository()
       const user = await userRepository.findByEmail(email)
 
       if (!user) {
@@ -16,8 +17,14 @@ export const findUserByemail = new Elysia().get(
         return new UserNotFoundError()
       }
       return user
-    } catch (error) {
-      throw error
+    },
+    {
+      params: t.Object({
+        email: t.String(),
+      }),
+      response: {
+        200: getUserDto,
+        404: t.Object({ message: t.String() }),
+      },
     }
-  }
-)
+  )
