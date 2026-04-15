@@ -2,6 +2,8 @@ import { Elysia } from 'elysia'
 import { authRoutes } from './modules/auth/routes'
 import openapi from '@elysiajs/openapi'
 import { jwt } from '@elysiajs/jwt'
+import { userRoutes } from './modules/user/routes'
+import { authMiddleware } from './shared/middleware/auth-middleware'
 
 export const app = new Elysia()
 
@@ -40,6 +42,8 @@ app.use(
   })
 )
 app.use(authRoutes)
+
+app.use(userRoutes)
 
 app.listen(3000)
 
